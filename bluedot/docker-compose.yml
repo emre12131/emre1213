@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
     volumes:
       - uploads:/app/uploads   # shared with API so audio files are accessible
     ports:

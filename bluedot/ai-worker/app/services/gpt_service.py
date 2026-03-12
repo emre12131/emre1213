@@ -1,17 +1,13 @@
 """
-GPTService — uses GPT-4o to analyse meeting transcripts.
+LLMService — Groq Llama 3.3 70B ile toplanti analizi (ucretsiz).
 
-Generates:
-  - Concise meeting title
-  - Structured summary (3-5 paragraphs)
-  - Action items (with owner and due-date hints where possible)
-  - Key decisions
-  - Follow-up email draft
+Groq ucretsiz tier: cok cömert, gunluk binlerce sorgu.
+Model: llama-3.3-70b-versatile — GPT-4o kalitesinde, tamamen ucretsiz.
 """
 
 import json
 import os
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 
 ANALYSIS_SYSTEM_PROMPT = """\
 You are an expert meeting analyst. Given a meeting transcript, extract structured information.
@@ -34,29 +30,17 @@ Respond in the same language as the transcript.
 
 class GPTService:
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        self.client = AsyncGroq(api_key=os.environ["GROQ_API_KEY"])
 
     async def analyse(self, transcript: str, language: str = "en") -> dict:
-        """
-        Analyse a meeting transcript with GPT-4o.
-
-        Returns:
-            {
-                "title":          str,
-                "summary":        str,
-                "action_items":   list[dict],
-                "key_decisions":  list[str],
-                "follow_up_email": str,
-            }
-        """
         if not transcript or not transcript.strip():
             return self._empty_analysis()
 
-        # Truncate extremely long transcripts to fit context window
-        truncated = transcript[:60_000]
+        # Llama 3.3 70B context: 128k tokens — transkript icin yeterli
+        truncated = transcript[:80_000]
 
         response = await self.client.chat.completions.create(
-            model="gpt-4o",
+            model="llama-3.3-70b-versatile",
             temperature=0.3,
             response_format={"type": "json_object"},
             messages=[
@@ -73,7 +57,6 @@ class GPTService:
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
-            # Fallback — extract what we can
             return {
                 "title":           "Meeting Summary",
                 "summary":         raw,
@@ -92,8 +75,8 @@ class GPTService:
 
     def _empty_analysis(self) -> dict:
         return {
-            "title":           "Empty Meeting",
-            "summary":         "No transcript content available.",
+            "title":           "Bos Toplanti",
+            "summary":         "Transkript icerigi bulunamadi.",
             "action_items":    [],
             "key_decisions":   [],
             "follow_up_email": "",
