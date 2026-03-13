@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bluedot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 200px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px;
+    }
+    .title { font-weight: 700; font-size: 16px; }
+    .subtitle { font-size: 11px; color: #64748b; }
+
+    .content { padding: 16px; }
+
+    /* Auth */
+    #auth-section input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f8fafc;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin-bottom: 8px;
+      outline: none;
+    }
+    #auth-section input:focus { border-color: #3b82f6; }
+    .btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-danger  { background: #ef4444; color: #fff; }
+    .btn-ghost   { background: #1e293b; color: #94a3b8; }
+
+    /* Status card */
+    #status-section { display: none; }
+    .status-card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+    }
+    .dot.recording { background: #ef4444; animation: pulse 1.2s infinite; }
+    .dot.processing { background: #f59e0b; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .status-label { font-size: 13px; font-weight: 600; }
+    .status-sub   { font-size: 11px; color: #64748b; }
+    .timer        { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 4px 0; }
+
+    .user-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #1e293b;
+    }
+    .user-email { font-size: 11px; color: #64748b; }
+    .link { font-size: 11px; color: #3b82f6; text-decoration: none; cursor: pointer; }
+    .link:hover { text-decoration: underline; }
+
+    .error { color: #f87171; font-size: 12px; margin-top: 6px; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid #fff3; border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">B</div>
+    <div>
+      <div class="title">Bluedot</div>
+      <div class="subtitle">AI Meeting Recorder</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Auth section -->
+    <div id="auth-section">
+      <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Sign in to start recording your meetings.</p>
+      <input type="email" id="email" placeholder="Email address" autocomplete="email">
+      <input type="password" id="password" placeholder="Password">
+      <button class="btn btn-primary" id="login-btn">Sign In</button>
+      <p class="error" id="auth-error"></p>
+    </div>
+
+    <!-- Logged-in section -->
+    <div id="status-section">
+      <div class="status-card">
+        <div class="status-row">
+          <div class="dot" id="status-dot"></div>
+          <div>
+            <div class="status-label" id="status-label">Ready</div>
+            <div class="status-sub" id="status-sub">Open a meeting to start recording</div>
+          </div>
+        </div>
+        <div class="timer" id="timer" style="display:none">00:00</div>
+      </div>
+
+      <button class="btn btn-primary" id="record-btn" style="margin-bottom:8px">Start Recording</button>
+      <button class="btn btn-ghost" id="dashboard-btn">Open Dashboard</button>
+
+      <div class="user-row">
+        <span class="user-email" id="user-email"></span>
+        <span class="link" id="logout-btn">Sign out</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users & Auth ──────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  avatarUrl    String?
+  plan         Plan      @default(FREE)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  meetings     Meeting[]
+  webhooks     Webhook[]
+  apiKeys      ApiKey[]
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+  ENTERPRISE
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  keyHash   String   @unique
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── Meetings ──────────────────────────────────────────────────────────────────
+
+model Meeting {
+  id           String        @id @default(uuid())
+  userId       String
+  title        String        @default("Untitled Meeting")
+  platform     String?
+  meetingUrl   String?
+  status       MeetingStatus @default(RECORDING)
+  startedAt    DateTime      @default(now())
+  endedAt      DateTime?
+  duration     Int?          // seconds
+  language     String?
+  audioPath    String?       // path to assembled audio on disk / S3 key
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks       AudioChunk[]
+  transcript   Transcript?
+  summary      Summary?
+  participants Participant[]
+}
+
+enum MeetingStatus {
+  RECORDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model AudioChunk {
+  id         String   @id @default(uuid())
+  meetingId  String
+  chunkIndex Int
+  filePath   String
+  sizeBytes  Int
+  createdAt  DateTime @default(now())
+
+  meeting    Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, chunkIndex])
+}
+
+model Transcript {
+  id        String   @id @default(uuid())
+  meetingId String   @unique
+  text      String
+  segments  Json     @default("[]")  // [{start, end, text}]
+  createdAt DateTime @default(now())
+
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Summary {
+  id             String   @id @default(uuid())
+  meetingId      String   @unique
+  title          String?
+  text           String
+  actionItems    Json     @default("[]")  // [{text, owner, due}]
+  keyDecisions   Json     @default("[]")
+  followUpEmail  String?
+  createdAt      DateTime @default(now())
+
+  meeting        Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Participant {
+  id        String  @id @default(uuid())
+  meetingId String
+  name      String?
+  email     String?
+  talkTime  Int?    // seconds
+
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+}
+
+// ── Webhooks ──────────────────────────────────────────────────────────────────
+
+model Webhook {
+  id         String   @id @default(uuid())
+  userId     String
+  url        String
+  secret     String?
+  events     String[] @default(["meeting.completed"])
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id          String   @id @default(uuid())
+  webhookId   String
+  meetingId   String?
+  event       String
+  statusCode  Int?
+  success     Boolean  @default(false)
+  attempts    Int      @default(0)
+  nextRetry   DateTime?
+  payload     Json
+  response    String?
+  createdAt   DateTime @default(now())
+
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}

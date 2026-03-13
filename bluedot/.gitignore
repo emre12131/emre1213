@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Uploads
+api/uploads/
+
+# DB
+*.db
+*.sqlite
+
+# Misc
+.DS_Store
+*.log
+.prisma/

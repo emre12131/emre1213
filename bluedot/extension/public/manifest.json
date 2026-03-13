@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Bluedot — AI Meeting Recorder",
+  "version": "1.0.0",
+  "description": "Bot-free AI meeting recorder. Records, transcribes and summarizes your meetings automatically.",
+
+  "permissions": [
+    "tabCapture",
+    "storage",
+    "scripting",
+    "offscreen",
+    "notifications",
+    "identity"
+  ],
+
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "https://*.zoom.us/*",
+    "https://teams.microsoft.com/*",
+    "https://app.gather.town/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background/index.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*",
+        "https://*.zoom.us/wc/*",
+        "https://teams.microsoft.com/*"
+      ],
+      "js": ["src/content/index.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "32":  "icons/icon32.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "32":  "icons/icon32.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["src/offscreen/index.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
